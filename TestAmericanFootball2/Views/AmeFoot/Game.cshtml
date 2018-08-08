@@ -1,0 +1,98 @@
+﻿@model TestAmericanFootball2.ViewModels.AmeFootViiewModel
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h2>AmeFoot</h2>
+<form asp-controller="AmeFoot" asp-action="Game">
+    <p>
+        <input type="submit" name="method" value="初期化" />
+        <a asp-action="Index">別のユーザーで始める</a>
+    </p>
+    <table class="table">
+        <tr>
+            <td>
+                現在のプレイヤー
+            </td>
+            <td>
+                @if (Model.CurrentPlayer == 1)
+                {
+                    @Html.DisplayFor(model => model.Player1Id)
+                }
+                else
+                {
+                    @Html.DisplayFor(model => model.Player2Id)
+                }
+            </td>
+        </tr>
+        <tr>
+            <td>
+                @Html.DisplayNameFor(model => model.CurrentQuarter)
+            </td>
+            <td>
+                @Html.DisplayFor(model => model.CurrentQuarter)
+            </td>
+        </tr>
+        <tr>
+            <td>
+                @Html.DisplayNameFor(model => model.RemainTime)
+            </td>
+            <td>
+                @Html.DisplayFor(model => model.RemainTime)
+            </td>
+        </tr>
+        <tr>
+            <td>
+                @Html.DisplayFor(model => model.Player1Id)スコア
+            </td>
+            <td>
+                @Html.DisplayFor(model => model.P1Score)
+            </td>
+        </tr>
+        <tr>
+            <td>
+                @Html.DisplayFor(model => model.Player2Id)スコア
+            </td>
+            <td>
+                @Html.DisplayFor(model => model.P2Score)
+            </td>
+        </tr>
+        <tr>
+            <td>
+                @Html.DisplayNameFor(model => model.RemainYards)
+            </td>
+            <td>
+                @Html.DisplayFor(model => model.RemainYards)ヤード
+            </td>
+        </tr>
+        <tr>
+            <td>
+                @Html.DisplayNameFor(model => model.GainYards)
+            </td>
+            <td>
+                @Html.DisplayFor(model => model.GainYards)ヤード
+            </td>
+        </tr>
+        <tr>
+            <td>
+                @Html.DisplayNameFor(model => model.RemainOffenceNum)
+            </td>
+            <td>
+                @Html.DisplayFor(model => model.RemainOffenceNum)回
+            </td>
+        </tr>
+    </table>
+
+    <p>
+        <input type="submit" name="method" value="ラン" />
+        <input type="submit" name="method" value="パス" />
+    </p>
+
+    <div>
+        @Html.DisplayFor(model => model.Result)
+    </div>
+
+    @Html.HiddenFor(model => model.Player1Id)
+    @Html.HiddenFor(model => model.Player2Id)
+</form>
