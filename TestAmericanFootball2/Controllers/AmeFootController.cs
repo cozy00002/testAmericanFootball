@@ -193,7 +193,7 @@ namespace TestAmericanFootball2.Controllers
         {
             int result = new Random().Next(0, 100);
             int percent = 0;
-            bool boastPass = remainYards <= (Const.ALL_YARDS / 2);
+            bool boastPass = remainYards >= (Const.ALL_YARDS / 2);
             List<int> percents;
             List<decimal> gains;
 
