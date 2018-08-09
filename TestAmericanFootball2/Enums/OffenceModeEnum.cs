@@ -2,6 +2,6 @@
 {
     public enum OffenceModeEnum
     {
-        Run, Pass
+        Run, ShortPass, LongPass
     }
 }

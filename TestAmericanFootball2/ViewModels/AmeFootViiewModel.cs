@@ -24,6 +24,14 @@ namespace TestAmericanFootball2.ViewModels
         public int CurrentQuarter { get; set; }
 
         /// <summary>
+        /// 総クオーター
+        /// </summary>
+        public int TotalQuarter
+        {
+            get { return Const.QUARTERS; }
+        }
+
+        /// <summary>
         /// 残り時間
         /// </summary>
         [Display(Name = "残り時間")]

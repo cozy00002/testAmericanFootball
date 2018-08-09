@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,7 +14,6 @@ namespace TestAmericanFootball2.Controllers
 {
     public class AmeFootController : Controller
     {
-        private const int QUARTER_SECONDS = 900;
         private readonly TestAmericanFootball2Context _context;
 
         public AmeFootController(TestAmericanFootball2Context context)
@@ -49,8 +49,12 @@ namespace TestAmericanFootball2.Controllers
                     _Offence(OffenceModeEnum.Run, game);
                     break;
 
-                case "パス":
-                    _Offence(OffenceModeEnum.Pass, game);
+                case "ショートパス":
+                    _Offence(OffenceModeEnum.ShortPass, game);
+                    break;
+
+                case "ロングパス":
+                    _Offence(OffenceModeEnum.LongPass, game);
                     break;
 
                 case null:
@@ -80,93 +84,103 @@ namespace TestAmericanFootball2.Controllers
         [NonAction]
         private void _Offence(OffenceModeEnum mode, Game game)
         {
-            if (game.CurrentQuarter == 4 && game.RemainSeconds <= 0) return;
+            if (game.CurrentQuarter == Const.QUARTERS && game.RemainSeconds <= 0) return;
 
-            decimal gain = 0;
             int seconds = 0;
-            var result = new StringBuilder();
+            var resultStr = new StringBuilder();
+            string method = string.Empty;
 
-            bool isSuccess = _IsOffenceSuccess(mode);
+            var result = _IsOffenceSuccess(mode, game.RemainYards);
             switch (mode)
             {
                 case OffenceModeEnum.Run:
-                    gain = isSuccess ? 5 : 1;
-                    seconds = 20;
-
+                    seconds = 15;
+                    method = "ラン";
                     break;
 
-                case OffenceModeEnum.Pass:
-                    gain = isSuccess ? 20 : 0;
+                case OffenceModeEnum.ShortPass:
                     seconds = 5;
+                    method = "ショートパス";
+                    break;
+
+                case OffenceModeEnum.LongPass:
+                    seconds = 7;
+                    method = "ロングパス";
                     break;
             }
-            game.RemainYards -= gain;
-            game.GainYards += gain;
+
+            if (result.gain > 0)
+            {
+                game.RemainYards -= result.gain;
+                game.GainYards += result.gain;
+            }
             game.RemainSeconds -= seconds;
             game.RemainOffenceNum = game.RemainOffenceNum - 1;
-            //game.RemainOffenceNum = isSuccess ? 4 : game.RemainOffenceNum - 1;
 
-            result.Append($"{(isSuccess ? "成功" : "失敗")}。");
-            result.Append($"{gain}ヤードゲイン。");
-            result.Append($"{seconds}秒経過。");
+            resultStr.Append($"{method}{result.result}。");
+            if (result.gain > 0) resultStr.Append($"{result.gain} ヤードゲイン。");
+            resultStr.Append($"{seconds}秒経過。");
 
             // タッチダウン
             if (game.RemainYards <= 0)
             {
-                result.Append($"タッチダウン。");
+                resultStr.Append($"タッチダウン。");
 
                 game.P1Score += game.CurrentPlayer == 1 ? 7 : 0;
                 game.P2Score += game.CurrentPlayer == 2 ? 7 : 0;
                 game.CurrentPlayer = game.CurrentPlayer == 1 ? 2 : 1;
-                _ResetOffenceData(game);
+                _ResetOffenceData(game, 10);
+            }
+            // タイムアップ
+            else if (game.RemainSeconds <= 0)
+            {
+                // クオーターチェンジ
+                if (game.CurrentQuarter < Const.QUARTERS)
+                {
+                    resultStr.Append($"{game.CurrentQuarter}Q終了。");
+                    game.CurrentQuarter++;
+                    game.CurrentPlayer = game.CurrentQuarter % 2 == 0 ? 2 : 1;
+                    string newPlayer = game.CurrentPlayer == 1 ? game.Player1Id : game.Player2Id;
+                    _ResetOffenceData(game, 10);
+                    game.RemainSeconds = Const.QUARTER_SECONDS;
+                    resultStr.Append($"＞{newPlayer}");
+                }
+                // ゲームセット
+                else
+                {
+                    resultStr.Append($"ゲームセット。");
+                    game.RemainSeconds = 0;
+                    var cmpScore = game.P1Score.CompareTo(game.P2Score);
+                    if (cmpScore == 0)
+                    {
+                        resultStr.Append($"ドロー。");
+                    }
+                    else
+                    {
+                        resultStr.Append($"{(cmpScore > 0 ? game.Player1Id : game.Player2Id)}の勝ち。");
+                    }
+                }
             }
             // 攻撃成功
             else if (game.GainYards >= 10)
             {
                 game.GainYards = 0;
                 game.RemainOffenceNum = 4;
-                result.Append($"攻撃成功。攻撃回数が4にリセットされます。");
-            }
-            // チェンジ
-            else if (game.RemainOffenceNum <= 0)
-            {
-                game.CurrentPlayer = game.CurrentPlayer == 1 ? 2 : 1;
-                _ResetOffenceData(game);
-                string newPlayer = game.CurrentPlayer == 1 ? game.Player1Id : game.Player2Id;
-                result.Append($"チェンジ。＞{newPlayer}");
-            }
-            // タイムアップ
-            else if (game.RemainSeconds <= 0)
-            {
-                // クオーターチェンジ
-                if (game.CurrentQuarter < 4)
-                {
-                    result.Append($"{game.CurrentQuarter}Q終了。");
-                    game.CurrentQuarter++;
-                    game.CurrentPlayer = game.CurrentQuarter % 2 == 0 ? 2 : 1;
-                    string newPlayer = game.CurrentPlayer == 1 ? game.Player1Id : game.Player2Id;
-                    _ResetOffenceData(game);
-                    game.RemainSeconds = QUARTER_SECONDS;
-                    result.Append($"＞{newPlayer}");
-                }
-                // ゲームセット
-                else
-                {
-                    result.Append($"ゲームセット。");
-                    game.RemainSeconds = 0;
-                    var cmpScore = game.P1Score.CompareTo(game.P2Score);
-                    if (cmpScore == 0)
-                    {
-                        result.Append($"ドロー。");
-                    }
-                    else
-                    {
-                        result.Append($"{(cmpScore > 0 ? game.Player1Id : game.Player2Id)}の勝ち。");
-                    }
-                }
+                resultStr.Append($"攻撃成功。攻撃回数が4にリセットされます。");
             }
 
-            game.Result = result.ToString();
+            // チェンジ
+            else if (game.RemainOffenceNum <= 0 || result.gain < 0)
+            {
+                string changeStr = (result.gain < 0) ? "インターセプト" : "チェンジ";
+                game.CurrentPlayer = game.CurrentPlayer == 1 ? 2 : 1;
+                _ResetOffenceData(game, game.RemainYards);
+                string newPlayer = game.CurrentPlayer == 1 ? game.Player1Id : game.Player2Id;
+
+                resultStr.Append($"{changeStr}＞{newPlayer}");
+            }
+
+            game.Result = resultStr.ToString();
         }
 
         /// <summary>
@@ -175,20 +189,72 @@ namespace TestAmericanFootball2.Controllers
         /// <param name="mode"></param>
         /// <returns></returns>
         [NonAction]
-        private bool _IsOffenceSuccess(OffenceModeEnum mode)
+        private (decimal gain, string result) _IsOffenceSuccess(OffenceModeEnum mode, decimal remainYards)
         {
-            int result;
+            int result = new Random().Next(0, 100);
+            int percent = 0;
+            bool boastPass = remainYards <= (Const.ALL_YARDS / 2);
+            List<int> percents;
+            List<decimal> gains;
+
             switch (mode)
             {
                 case OffenceModeEnum.Run:
-                    result = new Random().Next(0, 2);
-                    return result == 0;
+                    percent = 50;
+                    percents = new List<int>() { 10, 50, 95 };
+                    gains = new List<decimal>() { 10, 5, 2, 1 };
+                    break;
 
-                case OffenceModeEnum.Pass:
-                    result = new Random().Next(0, 4);
-                    return result == 0;
+                case OffenceModeEnum.ShortPass:
+                    gains = new List<decimal>() { 20, 10, 0, -1 };
+                    if (boastPass)
+                    {
+                        percents = new List<int>() { 5, 40, 98 };
+                    }
+                    else
+                    {
+                        percents = new List<int>() { 5, 25, 95 };
+                    }
+
+                    percent = boastPass ? 40 : 20;
+                    break;
+
+                case OffenceModeEnum.LongPass:
+                    gains = new List<decimal>() { 40, 20, 0, -1 };
+                    if (boastPass)
+                    {
+                        percents = new List<int>() { 2, 25, 90 };
+                    }
+                    else
+                    {
+                        percents = new List<int>() { 2, 15, 85 };
+                    }
+
+                    percent = boastPass ? 30 : 15;
+                    break;
+
+                default:
+                    throw new ArgumentException("OffenceModeが不正");
             }
-            return true;
+
+            if (percents[0] > result)
+            {
+                return (gains[0], "大成功");
+            }
+            else if (percents[1] > result)
+            {
+                return (gains[1], "成功");
+            }
+            else if (percents[2] > result)
+            {
+                return (gains[2], "失敗");
+            }
+            else
+            {
+                return (gains[3], "大失敗");
+            }
+
+            //return result < percent;
         }
 
         /// <summary>
@@ -202,11 +268,11 @@ namespace TestAmericanFootball2.Controllers
             {
                 P1Score = 0,
                 P2Score = 0,
-                RemainSeconds = QUARTER_SECONDS,
+                RemainSeconds = Const.QUARTER_SECONDS,
                 CurrentQuarter = 1,
                 CurrentPlayer = 1,
             };
-            _ResetOffenceData(game);
+            _ResetOffenceData(game, 10);
             return game;
         }
 
@@ -215,9 +281,9 @@ namespace TestAmericanFootball2.Controllers
         /// </summary>
         /// <returns></returns>
         [NonAction]
-        private void _ResetOffenceData(Game game)
+        private void _ResetOffenceData(Game game, decimal remainYards)
         {
-            game.RemainYards = 100;
+            game.RemainYards = Const.ALL_YARDS - remainYards;
             game.GainYards = 0;
             game.RemainOffenceNum = 4;
         }

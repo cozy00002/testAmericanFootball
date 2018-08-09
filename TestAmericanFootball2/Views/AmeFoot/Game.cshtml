@@ -7,7 +7,7 @@
 <h2>AmeFoot</h2>
 <form asp-controller="AmeFoot" asp-action="Game">
     <p>
-        <input type="submit" name="method" value="初期化" />
+        <input type="submit" name="method" value="初期化" class="btn btn-default" />
         <a asp-action="Index">別のユーザーで始める</a>
     </p>
     <table class="table">
@@ -31,7 +31,7 @@
                 @Html.DisplayNameFor(model => model.CurrentQuarter)
             </td>
             <td>
-                @Html.DisplayFor(model => model.CurrentQuarter)
+                @Html.DisplayFor(model => model.CurrentQuarter) / @Html.DisplayFor(model => model.TotalQuarter)
             </td>
         </tr>
         <tr>
@@ -85,8 +85,9 @@
     </table>
 
     <p>
-        <input type="submit" name="method" value="ラン" />
-        <input type="submit" name="method" value="パス" />
+        <input type="submit" name="method" value="ラン" class="btn btn-default" />
+        <input type="submit" name="method" value="ショートパス" class="btn btn-default" />
+        <input type="submit" name="method" value="ロングパス" class="btn btn-default" />
     </p>
 
     <div>
