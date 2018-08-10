@@ -41,37 +41,29 @@ namespace TestAmericanFootball2.Controllers
         {
             AmeFootViiewModel ameFootVM;
             Game game;
-            var dicMethod = new Dictionary<string, OffenceModeEnum>()
-            {
-                { "ラン", OffenceModeEnum.Run },
-                { "ショートパス", OffenceModeEnum.ShortPass },
-                { "ロングパス", OffenceModeEnum.LongPass },
-                { "パント", OffenceModeEnum.Pant },
-                { "キック", OffenceModeEnum.Kick },
-                { "ギャンブル", OffenceModeEnum.Gamble },
-            };
+            var offenceMode = method.GetOffenceMode();
 
             game = await _context.Game.Where(x =>
             x.Player1Id == player1Id && x.Player2Id == player2Id)
             .SingleOrDefaultAsync();
-            switch (method)
+            switch (offenceMode)
             {
-                case "ラン":
-                case "ショートパス":
-                case "ロングパス":
-                case "パント":
-                case "キック":
-                case "ギャンブル":
-                    _Offence(dicMethod[method], game);
+                case OffenceModeEnum.Run:
+                case OffenceModeEnum.ShortPass:
+                case OffenceModeEnum.LongPass:
+                case OffenceModeEnum.Pant:
+                case OffenceModeEnum.Kick:
+                case OffenceModeEnum.Gamble:
+                    _Offence(method.GetOffenceMode(), game);
                     _context.Update(game);
                     await _context.SaveChangesAsync();
                     break;
 
-                case null:
+                case OffenceModeEnum.Empty:
                     // 何もしない
                     break;
 
-                case "初期化":
+                case OffenceModeEnum.Initialize:
                 default:
                     if (game != null)
                     {
