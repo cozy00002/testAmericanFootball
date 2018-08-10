@@ -13,7 +13,7 @@
     <table class="table">
         <tr>
             <td>
-                現在のプレイヤー
+                オフェンス
             </td>
             <td>
                 @if (Model.CurrentPlayer == 1)
@@ -44,17 +44,11 @@
         </tr>
         <tr>
             <td>
-                @Html.DisplayFor(model => model.Player1Id)スコア
+                スコア（@Model.Player1Id - @Model.Player2Id）
             </td>
             <td>
                 @Html.DisplayFor(model => model.P1Score)
-            </td>
-        </tr>
-        <tr>
-            <td>
-                @Html.DisplayFor(model => model.Player2Id)スコア
-            </td>
-            <td>
+                -
                 @Html.DisplayFor(model => model.P2Score)
             </td>
         </tr>
@@ -85,17 +79,23 @@
     </table>
 
     <p>
-        @if (Model.RemainOffenceNum > 1)
-        {
-            <input type="submit" name="method" value="ラン" class="btn btn-default" />
-            <input type="submit" name="method" value="ショートパス" class="btn btn-default" />
-            <input type="submit" name="method" value="ロングパス" class="btn btn-default" />
+        @{
+            string kickDisabled = (int.Parse(Model.RemainYards) >= 40) ? "disabled" : "";
         }
-        else
+        @if (Model.RemainSeconds > 0)
         {
-            <input type="submit" name="method" value="パント" class="btn btn-info" />
-            <input type="submit" name="method" value="キック" class="btn btn-info" />
-            <input type="submit" name="method" value="ギャンブル" class="btn btn-warning" />
+            @if (Model.RemainOffenceNum > 1)
+            {
+                <input type="submit" name="method" value="ラン" class="btn btn-default" />
+                <input type="submit" name="method" value="ショートパス" class="btn btn-default" />
+                <input type="submit" name="method" value="ロングパス" class="btn btn-default" />
+            }
+            else
+            {
+                <input type="submit" name="method" value="パント" class="btn btn-info" />
+                <input type="submit" name="method" value="キック" class="btn btn-info" @kickDisabled />
+                <input type="submit" name="method" value="ギャンブル" class="btn btn-warning" />
+            }
         }
     </p>
 

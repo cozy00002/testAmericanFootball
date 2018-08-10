@@ -62,9 +62,14 @@ namespace TestAmericanFootball2.Controllers
                 case "キック":
                 case "ギャンブル":
                     _Offence(dicMethod[method], game);
+                    _context.Update(game);
+                    await _context.SaveChangesAsync();
                     break;
 
                 case null:
+                    // 何もしない
+                    break;
+
                 case "初期化":
                 default:
                     if (game != null)
@@ -74,11 +79,10 @@ namespace TestAmericanFootball2.Controllers
                     game = _InitializeGame();
                     game.Player1Id = player1Id;
                     game.Player2Id = player2Id;
-
+                    _context.Update(game);
+                    await _context.SaveChangesAsync();
                     break;
             }
-            _context.Update(game);
-            await _context.SaveChangesAsync();
             ameFootVM = Mapper.Map<AmeFootViiewModel>(game);
             return View(ameFootVM);
         }
@@ -140,10 +144,6 @@ namespace TestAmericanFootball2.Controllers
             game.RemainOffenceNum = game.RemainOffenceNum - 1;
 
             resultStr.Append($"{method}{result.result}。");
-            if (mode != OffenceModeEnum.Kick)
-            {
-                resultStr.Append($"{result.gain} ヤードゲイン。");
-            }
             resultStr.Append($"{seconds}秒経過。");
 
             // タイムアップ
@@ -184,6 +184,7 @@ namespace TestAmericanFootball2.Controllers
                      game.RemainYards <= 0
                      )
             {
+                resultStr.Append($"{result.gain:0} ヤードゲイン。");
                 if (result.intercept)
                 {
                     resultStr.Append("インターセプト。");
@@ -217,9 +218,14 @@ namespace TestAmericanFootball2.Controllers
             // 攻撃成功
             else if (game.GainYards >= 10)
             {
+                resultStr.Append($"{result.gain:0} ヤードゲイン。");
                 game.GainYards = 0;
                 game.RemainOffenceNum = 4;
                 resultStr.Append($"攻撃成功。攻撃回数が4にリセットされます。");
+            }
+            else
+            {
+                resultStr.Append($"{result.gain:0} ヤードゲイン。");
             }
 
             game.Result = resultStr.ToString();
@@ -239,6 +245,7 @@ namespace TestAmericanFootball2.Controllers
             List<int> percents;
             List<decimal> gains;
             bool interCept = false;
+            bool interCeptUse = false;
 
             switch (mode)
             {
@@ -259,6 +266,7 @@ namespace TestAmericanFootball2.Controllers
                     {
                         percents = new List<int>() { 5, 25, 95 };
                     }
+                    interCeptUse = true;
 
                     break;
 
@@ -273,6 +281,7 @@ namespace TestAmericanFootball2.Controllers
                     {
                         percents = new List<int>() { 2, 15, 85 };
                     }
+                    interCeptUse = true;
 
                     break;
 
@@ -292,6 +301,7 @@ namespace TestAmericanFootball2.Controllers
                 case OffenceModeEnum.Gamble:
                     gains = new List<decimal>() { 10, 2, 0, 0 };
                     percents = new List<int>() { 10, 50, 90 };
+                    interCeptUse = true;
                     break;
 
                 default:
@@ -308,7 +318,8 @@ namespace TestAmericanFootball2.Controllers
             }
             else if (percents[2] > result)
             {
-                if (mode != OffenceModeEnum.Run)
+                // インターセプト判定
+                if (interCeptUse)
                 {
                     resultIc = new Random().Next(0, 10);
                     interCept = resultIc <= 0;
@@ -318,7 +329,7 @@ namespace TestAmericanFootball2.Controllers
             }
             else
             {
-                if (mode != OffenceModeEnum.Run)
+                if (interCeptUse)
                 {
                     resultIc = new Random().Next(0, 5);
                     interCept = resultIc <= 0;
