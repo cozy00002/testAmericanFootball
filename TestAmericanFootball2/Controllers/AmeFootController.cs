@@ -131,11 +131,11 @@ namespace TestAmericanFootball2.Controllers
                     break;
             }
 
-            if (result.gain > 0)
-            {
-                game.RemainYards -= result.gain;
-                game.GainYards += result.gain;
-            }
+            if (result.gain > game.RemainYards) result.gain = game.RemainYards;
+            if (game.RemainYards - result.gain > Const.ALL_YARDS) result.gain = game.RemainYards - Const.ALL_YARDS;
+
+            game.RemainYards -= result.gain;
+            game.GainYards += result.gain;
             game.RemainSeconds -= seconds;
             game.RemainOffenceNum = game.RemainOffenceNum - 1;
 
@@ -282,7 +282,8 @@ namespace TestAmericanFootball2.Controllers
 
                 // キック
                 case OffenceModeEnum.Kick:
-                    var kickProbability = (int)(((Const.ALL_YARDS - remainYards) / Const.ALL_YARDS) * 100 + 1);
+                    //var kickProbability = (int)(((Const.ALL_YARDS - remainYards) / Const.ALL_YARDS) * 100 + 1);
+                    var kickProbability = remainYards >= 25 ? 20 : 90;
                     percents = new List<int>() { 0, kickProbability, 100 };
                     gains = new List<decimal>() { 0, remainYards, -10, 0 };
                     break;
