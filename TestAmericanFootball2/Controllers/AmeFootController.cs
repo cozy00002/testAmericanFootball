@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TestAmericanFootball2.Enums;
+using TestAmericanFootball2.Extentions;
 using TestAmericanFootball2.Models;
 using TestAmericanFootball2.ViewModels;
 
@@ -97,54 +98,21 @@ namespace TestAmericanFootball2.Controllers
         {
             if (game.CurrentQuarter == Const.QUARTERS && game.RemainSeconds <= 0) return;
 
-            int seconds = 0;
             var resultStr = new StringBuilder();
-            string method = string.Empty;
 
             var result = _IsOffenceSuccess(mode, game.RemainYards);
-            switch (mode)
-            {
-                case OffenceModeEnum.Run:
-                    seconds = 15;
-                    method = "ラン";
-                    break;
-
-                case OffenceModeEnum.ShortPass:
-                    seconds = 5;
-                    method = "ショートパス";
-                    break;
-
-                case OffenceModeEnum.LongPass:
-                    seconds = 7;
-                    method = "ロングパス";
-                    break;
-
-                case OffenceModeEnum.Pant:
-                    seconds = 0;
-                    method = "パント";
-                    break;
-
-                case OffenceModeEnum.Kick:
-                    seconds = 0;
-                    method = "キック";
-                    break;
-
-                case OffenceModeEnum.Gamble:
-                    seconds = 5;
-                    method = "ギャンブル";
-                    break;
-            }
+            var modeData = mode.GetOffenceModeData();
 
             if (result.gain > game.RemainYards) result.gain = game.RemainYards;
             if (game.RemainYards - result.gain > Const.ALL_YARDS) result.gain = game.RemainYards - Const.ALL_YARDS;
 
             game.RemainYards -= result.gain;
             game.GainYards += result.gain;
-            game.RemainSeconds -= seconds;
+            game.RemainSeconds -= modeData.seconds;
             game.RemainOffenceNum = game.RemainOffenceNum - 1;
 
-            resultStr.Append($"{method}{result.result}。");
-            resultStr.Append($"{seconds}秒経過。");
+            resultStr.Append($"{modeData.method}{result.result}。");
+            resultStr.Append($"{modeData.seconds}秒経過。");
 
             // タイムアップ
             if (game.RemainSeconds <= 0)

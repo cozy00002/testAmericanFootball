@@ -80,20 +80,37 @@
 
     <p>
         @{
-            string kickDisabled = (int.Parse(Model.RemainYards) >= 40) ? "disabled" : "";
+        //string kickDisabled2 = (int.Parse(Model.RemainYards) >= 40) ? "disabled" : "";
+        bool kickDisabled = int.Parse(Model.RemainYards) >= 40;
+        //string kickDisabled = "data-toggle=\"tooltip\" data-placement=\"top\" title=\"Tooltip on top\"";
         }
         @if (Model.RemainSeconds > 0)
         {
             @if (Model.RemainOffenceNum > 1)
+        {
+            <input type="submit" name="method" value="ラン" class="btn btn-default" />
+            <input type="submit" name="method" value="ショートパス" class="btn btn-default" />
+            <input type="submit" name="method" value="ロングパス" class="btn btn-default" />
+        }
+        else
+        {
+            <input type="submit" name="method" value="パント" class="btn btn-info" />
+            @if (kickDisabled)
             {
-                <input type="submit" name="method" value="ラン" class="btn btn-default" />
-                <input type="submit" name="method" value="ショートパス" class="btn btn-default" />
-                <input type="submit" name="method" value="ロングパス" class="btn btn-default" />
+                <span class="tool-tip"
+                      data-toggle="tooltip"
+                      data-placement="top"
+                      data-html="true"
+                      title="残り40ヤード以上では<br>使用できません"
+                >
+                    <input type="submit" name="method" value="キック" class="btn btn-info" disabled="disabled" />
+                </span>
             }
             else
             {
-                <input type="submit" name="method" value="パント" class="btn btn-info" />
-                <input type="submit" name="method" value="キック" class="btn btn-info" @kickDisabled />
+                <input type="submit" name="method" value="キック" class="btn btn-info" />
+            }
+
                 <input type="submit" name="method" value="ギャンブル" class="btn btn-warning" />
             }
         }
@@ -106,3 +123,4 @@
     @Html.HiddenFor(model => model.Player1Id)
     @Html.HiddenFor(model => model.Player2Id)
 </form>
+
