@@ -85,9 +85,18 @@
     </table>
 
     <p>
-        <input type="submit" name="method" value="ラン" class="btn btn-default" />
-        <input type="submit" name="method" value="ショートパス" class="btn btn-default" />
-        <input type="submit" name="method" value="ロングパス" class="btn btn-default" />
+        @if (Model.RemainOffenceNum > 1)
+        {
+            <input type="submit" name="method" value="ラン" class="btn btn-default" />
+            <input type="submit" name="method" value="ショートパス" class="btn btn-default" />
+            <input type="submit" name="method" value="ロングパス" class="btn btn-default" />
+        }
+        else
+        {
+            <input type="submit" name="method" value="パント" class="btn btn-info" />
+            <input type="submit" name="method" value="キック" class="btn btn-info" />
+            <input type="submit" name="method" value="ギャンブル" class="btn btn-warning" />
+        }
     </p>
 
     <div>

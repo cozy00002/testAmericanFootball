@@ -40,21 +40,28 @@ namespace TestAmericanFootball2.Controllers
         {
             AmeFootViiewModel ameFootVM;
             Game game;
+            var dicMethod = new Dictionary<string, OffenceModeEnum>()
+            {
+                { "ラン", OffenceModeEnum.Run },
+                { "ショートパス", OffenceModeEnum.ShortPass },
+                { "ロングパス", OffenceModeEnum.LongPass },
+                { "パント", OffenceModeEnum.Pant },
+                { "キック", OffenceModeEnum.Kick },
+                { "ギャンブル", OffenceModeEnum.Gamble },
+            };
+
             game = await _context.Game.Where(x =>
             x.Player1Id == player1Id && x.Player2Id == player2Id)
             .SingleOrDefaultAsync();
             switch (method)
             {
                 case "ラン":
-                    _Offence(OffenceModeEnum.Run, game);
-                    break;
-
                 case "ショートパス":
-                    _Offence(OffenceModeEnum.ShortPass, game);
-                    break;
-
                 case "ロングパス":
-                    _Offence(OffenceModeEnum.LongPass, game);
+                case "パント":
+                case "キック":
+                case "ギャンブル":
+                    _Offence(dicMethod[method], game);
                     break;
 
                 case null:
@@ -107,6 +114,21 @@ namespace TestAmericanFootball2.Controllers
                     seconds = 7;
                     method = "ロングパス";
                     break;
+
+                case OffenceModeEnum.Pant:
+                    seconds = 0;
+                    method = "パント";
+                    break;
+
+                case OffenceModeEnum.Kick:
+                    seconds = 0;
+                    method = "キック";
+                    break;
+
+                case OffenceModeEnum.Gamble:
+                    seconds = 5;
+                    method = "ギャンブル";
+                    break;
             }
 
             if (result.gain > 0)
@@ -118,21 +140,14 @@ namespace TestAmericanFootball2.Controllers
             game.RemainOffenceNum = game.RemainOffenceNum - 1;
 
             resultStr.Append($"{method}{result.result}。");
-            if (result.gain > 0) resultStr.Append($"{result.gain} ヤードゲイン。");
+            if (mode != OffenceModeEnum.Kick)
+            {
+                resultStr.Append($"{result.gain} ヤードゲイン。");
+            }
             resultStr.Append($"{seconds}秒経過。");
 
-            // タッチダウン
-            if (game.RemainYards <= 0)
-            {
-                resultStr.Append($"タッチダウン。");
-
-                game.P1Score += game.CurrentPlayer == 1 ? 7 : 0;
-                game.P2Score += game.CurrentPlayer == 2 ? 7 : 0;
-                game.CurrentPlayer = game.CurrentPlayer == 1 ? 2 : 1;
-                _ResetOffenceData(game, 10);
-            }
             // タイムアップ
-            else if (game.RemainSeconds <= 0)
+            if (game.RemainSeconds <= 0)
             {
                 // クオーターチェンジ
                 if (game.CurrentQuarter < Const.QUARTERS)
@@ -161,23 +176,50 @@ namespace TestAmericanFootball2.Controllers
                     }
                 }
             }
+
+            // チェンジ
+            else if (game.RemainOffenceNum <= 0 ||
+                     result.intercept ||
+                     mode == OffenceModeEnum.Pant || mode == OffenceModeEnum.Kick ||
+                     game.RemainYards <= 0
+                     )
+            {
+                if (result.intercept)
+                {
+                    resultStr.Append("インターセプト。");
+                    _ResetOffenceData(game, game.RemainYards);
+                }
+                else if (game.RemainYards <= 0)
+                {
+                    resultStr.Append($"{(mode != OffenceModeEnum.Kick ? "タッチダウン。" : "")}");
+
+                    int addScore = mode == OffenceModeEnum.Kick ? 3 : 7;
+                    if (game.CurrentPlayer == 1)
+                    {
+                        game.P1Score += addScore;
+                    }
+                    else
+                    {
+                        game.P2Score += addScore;
+                    }
+                    _ResetOffenceData(game, 10);
+                }
+                else
+                {
+                    _ResetOffenceData(game, game.RemainYards);
+                }
+
+                game.CurrentPlayer = game.CurrentPlayer == 1 ? 2 : 1;
+                string newPlayer = game.CurrentPlayer == 1 ? game.Player1Id : game.Player2Id;
+                resultStr.Append($"チェンジ。＞{newPlayer}");
+            }
+
             // 攻撃成功
             else if (game.GainYards >= 10)
             {
                 game.GainYards = 0;
                 game.RemainOffenceNum = 4;
                 resultStr.Append($"攻撃成功。攻撃回数が4にリセットされます。");
-            }
-
-            // チェンジ
-            else if (game.RemainOffenceNum <= 0 || result.gain < 0)
-            {
-                string changeStr = (result.gain < 0) ? "インターセプト" : "チェンジ";
-                game.CurrentPlayer = game.CurrentPlayer == 1 ? 2 : 1;
-                _ResetOffenceData(game, game.RemainYards);
-                string newPlayer = game.CurrentPlayer == 1 ? game.Player1Id : game.Player2Id;
-
-                resultStr.Append($"{changeStr}＞{newPlayer}");
             }
 
             game.Result = resultStr.ToString();
@@ -189,22 +231,24 @@ namespace TestAmericanFootball2.Controllers
         /// <param name="mode"></param>
         /// <returns></returns>
         [NonAction]
-        private (decimal gain, string result) _IsOffenceSuccess(OffenceModeEnum mode, decimal remainYards)
+        private (decimal gain, string result, bool intercept) _IsOffenceSuccess(OffenceModeEnum mode, decimal remainYards)
         {
             int result = new Random().Next(0, 100);
-            int percent = 0;
+            int resultIc;
             bool boastPass = remainYards >= (Const.ALL_YARDS / 2);
             List<int> percents;
             List<decimal> gains;
+            bool interCept = false;
 
             switch (mode)
             {
+                // ラン
                 case OffenceModeEnum.Run:
-                    percent = 50;
                     percents = new List<int>() { 10, 50, 95 };
-                    gains = new List<decimal>() { 10, 5, 2, 1 };
+                    gains = new List<decimal>() { 10, 5, 1, -1 };
                     break;
 
+                // ショートパス
                 case OffenceModeEnum.ShortPass:
                     gains = new List<decimal>() { 20, 10, 0, -1 };
                     if (boastPass)
@@ -216,9 +260,9 @@ namespace TestAmericanFootball2.Controllers
                         percents = new List<int>() { 5, 25, 95 };
                     }
 
-                    percent = boastPass ? 40 : 20;
                     break;
 
+                // ロングパス
                 case OffenceModeEnum.LongPass:
                     gains = new List<decimal>() { 40, 20, 0, -1 };
                     if (boastPass)
@@ -230,7 +274,23 @@ namespace TestAmericanFootball2.Controllers
                         percents = new List<int>() { 2, 15, 85 };
                     }
 
-                    percent = boastPass ? 30 : 15;
+                    break;
+
+                // パント
+                case OffenceModeEnum.Pant:
+                    return (Math.Floor(remainYards / 2), "実行", false);
+
+                // キック
+                case OffenceModeEnum.Kick:
+                    var kickProbability = (int)(((Const.ALL_YARDS - remainYards) / Const.ALL_YARDS) * 100 + 1);
+                    percents = new List<int>() { 0, kickProbability, 100 };
+                    gains = new List<decimal>() { 0, remainYards, -10, 0 };
+                    break;
+
+                // ギャンブル
+                case OffenceModeEnum.Gamble:
+                    gains = new List<decimal>() { 10, 2, 0, 0 };
+                    percents = new List<int>() { 10, 50, 90 };
                     break;
 
                 default:
@@ -239,19 +299,31 @@ namespace TestAmericanFootball2.Controllers
 
             if (percents[0] > result)
             {
-                return (gains[0], "大成功");
+                return (gains[0], "大成功", false);
             }
             else if (percents[1] > result)
             {
-                return (gains[1], "成功");
+                return (gains[1], "成功", false);
             }
             else if (percents[2] > result)
             {
-                return (gains[2], "失敗");
+                if (mode != OffenceModeEnum.Run)
+                {
+                    resultIc = new Random().Next(0, 10);
+                    interCept = resultIc <= 0;
+                }
+
+                return (gains[2], "失敗", interCept);
             }
             else
             {
-                return (gains[3], "大失敗");
+                if (mode != OffenceModeEnum.Run)
+                {
+                    resultIc = new Random().Next(0, 5);
+                    interCept = resultIc <= 0;
+                }
+
+                return (gains[3], "大失敗", interCept);
             }
 
             //return result < percent;
