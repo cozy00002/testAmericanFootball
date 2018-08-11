@@ -9,7 +9,6 @@
         LongPass,
         Pant,
         Kick,
-        Gamble,
         Cpu,
     }
 }

@@ -63,7 +63,6 @@ namespace TestAmericanFootball2.Controllers
                 case OffenceModeEnum.LongPass:
                 case OffenceModeEnum.Pant:
                 case OffenceModeEnum.Kick:
-                case OffenceModeEnum.Gamble:
                 case OffenceModeEnum.Cpu:
                     if (offenceMode == OffenceModeEnum.Cpu)
                     {
@@ -349,17 +348,9 @@ namespace TestAmericanFootball2.Controllers
 
                 // キック
                 case OffenceModeEnum.Kick:
-                    //var kickProbability = (int)(((Const.ALL_YARDS - remainYards) / Const.ALL_YARDS) * 100 + 1);
                     var kickProbability = remainYards >= 25 ? 20 : 90;
                     percents = new List<int>() { 0, kickProbability, 100 };
                     gains = new List<decimal>() { 0, remainYards, -10, 0 };
-                    break;
-
-                // ギャンブル
-                case OffenceModeEnum.Gamble:
-                    gains = new List<decimal>() { 10, 2, 0, 0 };
-                    percents = new List<int>() { 10, 50, 90 };
-                    interCeptUse = true;
                     break;
 
                 default:

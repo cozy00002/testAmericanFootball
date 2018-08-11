@@ -15,7 +15,6 @@ namespace TestAmericanFootball2.Extentions
                 { OffenceModeEnum.LongPass,("ロングパス",7) },
                 { OffenceModeEnum.Pant,("パント" ,0)},
                 { OffenceModeEnum.Kick,("キック",0) },
-                { OffenceModeEnum.Gamble,("ギャンブル",5) },
                 { OffenceModeEnum.Cpu,("コンピューター",0) },
             };
 
