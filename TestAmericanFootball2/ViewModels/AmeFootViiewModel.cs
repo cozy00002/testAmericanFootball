@@ -54,8 +54,19 @@ namespace TestAmericanFootball2.ViewModels
         /// <summary>
         /// 獲得ヤード数
         /// </summary>
-        [Display(Name = "獲得ヤード数")]
         public string GainYards { get; set; }
+
+        /// <summary>
+        /// ファーストダウンまでのヤード数
+        /// </summary>
+        [Display(Name = "ファーストダウンまであと")]
+        public string Remain1stDownYards
+        {
+            get
+            {
+                return (10 - int.Parse(GainYards)).ToString();
+            }
+        }
 
         /// <summary>
         /// 現在の攻撃回数

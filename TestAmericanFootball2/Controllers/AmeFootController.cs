@@ -104,7 +104,6 @@ namespace TestAmericanFootball2.Controllers
             game.RemainOffenceNum = game.RemainOffenceNum - 1;
 
             resultStr.Append($"{modeData.method}{result.result}。");
-            resultStr.Append($"{modeData.seconds}秒経過。");
 
             // タイムアップ
             if (game.RemainSeconds <= 0)
@@ -136,20 +135,18 @@ namespace TestAmericanFootball2.Controllers
                     }
                 }
             }
-
-            // チェンジ
-            else if (game.RemainOffenceNum <= 0 ||
-                     result.intercept ||
-                     mode == OffenceModeEnum.Pant || mode == OffenceModeEnum.Kick ||
-                     game.RemainYards <= 0
-                     )
+            else
             {
+                (bool flg, decimal remainYards) changeData = (false, 0);
                 resultStr.Append($"{result.gain:0} ヤードゲイン。");
+
+                // インターセプト
                 if (result.intercept)
                 {
                     resultStr.Append("インターセプト。");
-                    _ResetOffenceData(game, game.RemainYards);
+                    changeData = (true, game.RemainYards);
                 }
+                // タッチダウン
                 else if (game.RemainYards <= 0)
                 {
                     resultStr.Append($"{(mode != OffenceModeEnum.Kick ? "タッチダウン。" : "")}");
@@ -163,30 +160,90 @@ namespace TestAmericanFootball2.Controllers
                     {
                         game.P2Score += addScore;
                     }
-                    _ResetOffenceData(game, 10);
+                    changeData = (true, 10);
                 }
-                else
+
+                // パント
+                else if (mode == OffenceModeEnum.Pant)
                 {
-                    _ResetOffenceData(game, game.RemainYards);
+                    changeData = (true, game.RemainYards);
                 }
 
-                game.CurrentPlayer = game.CurrentPlayer == 1 ? 2 : 1;
-                string newPlayer = game.CurrentPlayer == 1 ? game.Player1Id : game.Player2Id;
-                resultStr.Append($"チェンジ。＞{newPlayer}");
+                // 攻撃成功
+                else if (game.GainYards >= 10)
+                {
+                    game.GainYards = 0;
+                    game.RemainOffenceNum = 4;
+                    resultStr.Append($"ファーストダウン。");
+                }
+
+                // 攻撃失敗
+                else if (game.RemainOffenceNum <= 0)
+                {
+                    changeData = (true, game.RemainYards);
+                }
+
+                resultStr.Append($"{modeData.seconds}秒経過。");
+
+                // チェンジフラグ
+                if (changeData.flg)
+                {
+                    game.CurrentPlayer = game.CurrentPlayer == 1 ? 2 : 1;
+                    string newPlayer = game.CurrentPlayer == 1 ? game.Player1Id : game.Player2Id;
+                    resultStr.Append($"チェンジ。＞{newPlayer}");
+                    _ResetOffenceData(game, changeData.remainYards);
+                }
             }
 
-            // 攻撃成功
-            else if (game.GainYards >= 10)
-            {
-                resultStr.Append($"{result.gain:0} ヤードゲイン。");
-                game.GainYards = 0;
-                game.RemainOffenceNum = 4;
-                resultStr.Append($"攻撃成功。攻撃回数が4にリセットされます。");
-            }
-            else
-            {
-                resultStr.Append($"{result.gain:0} ヤードゲイン。");
-            }
+            // チェンジ
+            //else if (game.RemainOffenceNum <= 0 ||
+            //         result.intercept ||
+            //         mode == OffenceModeEnum.Pant || mode == OffenceModeEnum.Kick ||
+            //         game.RemainYards <= 0
+            //         )
+            //{
+            //    resultStr.Append($"{result.gain:0} ヤードゲイン。");
+            //    if (result.intercept)
+            //    {
+            //        resultStr.Append("インターセプト。");
+            //        _ResetOffenceData(game, game.RemainYards);
+            //    }
+            //    else if (game.RemainYards <= 0)
+            //    {
+            //        resultStr.Append($"{(mode != OffenceModeEnum.Kick ? "タッチダウン。" : "")}");
+
+            //        int addScore = mode == OffenceModeEnum.Kick ? 3 : 7;
+            //        if (game.CurrentPlayer == 1)
+            //        {
+            //            game.P1Score += addScore;
+            //        }
+            //        else
+            //        {
+            //            game.P2Score += addScore;
+            //        }
+            //        _ResetOffenceData(game, 10);
+            //    }
+            //    else
+            //    {
+            //        _ResetOffenceData(game, game.RemainYards);
+            //    }
+
+            //    game.CurrentPlayer = game.CurrentPlayer == 1 ? 2 : 1;
+            //    string newPlayer = game.CurrentPlayer == 1 ? game.Player1Id : game.Player2Id;
+            //    resultStr.Append($"チェンジ。＞{newPlayer}");
+            //}
+            //// 攻撃成功
+            //else if (game.GainYards >= 10)
+            //{
+            //    resultStr.Append($"{result.gain:0} ヤードゲイン。");
+            //    game.GainYards = 0;
+            //    game.RemainOffenceNum = 4;
+            //    resultStr.Append($"攻撃成功。攻撃回数が4にリセットされます。");
+            //}
+            //else
+            //{
+            //    resultStr.Append($"{result.gain:0} ヤードゲイン。");
+            //}
 
             game.Result = resultStr.ToString();
         }
