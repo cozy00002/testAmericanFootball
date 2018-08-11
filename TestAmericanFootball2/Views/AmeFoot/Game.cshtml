@@ -3,7 +3,7 @@
 @{
     ViewData["Title"] = "Index";
 
-    bool kickDisabled = int.Parse(Model.RemainYards) >= 40;
+    bool shortDistance = int.Parse(Model.RemainYards) <= 24;
 
 }
 
@@ -97,7 +97,8 @@
             }
             else
             {
-                @if (Model.RemainOffenceNum > 1)
+
+                @if (Model.RemainOffenceNum >= 2)
                 {
                     <input type="submit" name="method" value="ラン" class="btn btn-default" />
                     <input type="submit" name="method" value="ショートパス" class="btn btn-default" />
@@ -105,23 +106,18 @@
                 }
                 else
                 {
-                    <input type="submit" name="method" value="パント" class="btn btn-info" />
-                    @if (kickDisabled)
+                    @if (shortDistance)
                     {
-                        <span class="tool-tip"
-                              data-toggle="tooltip"
-                              data-placement="top"
-                              data-html="true"
-                              title="残り40ヤード以上では<br>使用できません">
-                            <input type="submit" name="method" value="キック" class="btn btn-info" disabled="disabled" />
-                        </span>
+                        <input type="submit" name="method" value="ラン" class="btn btn-default" />
+                        <input type="submit" name="method" value="ショートパス" class="btn btn-default" />
+                        <input type="submit" name="method" value="キック" class="btn btn-info" />
                     }
                     else
                     {
-                        <input type="submit" name="method" value="キック" class="btn btn-info" />
+                        <input type="submit" name="method" value="ラン" class="btn btn-default" />
+                        <input type="submit" name="method" value="ロングパス" class="btn btn-default" />
+                        <input type="submit" name="method" value="パント" class="btn btn-info" />
                     }
-
-                    <input type="submit" name="method" value="ギャンブル" class="btn btn-warning" />
                 }
             }
         }

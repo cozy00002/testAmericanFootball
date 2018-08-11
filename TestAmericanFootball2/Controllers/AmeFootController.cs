@@ -119,7 +119,7 @@ namespace TestAmericanFootball2.Controllers
         [NonAction]
         private OffenceModeEnum _AIThink(Game game)
         {
-            if (game.RemainOffenceNum > 0)
+            if (game.RemainOffenceNum >= 2)
             {
                 var probablity = new List<ValueTuple<int, OffenceModeEnum>>()
                     {
@@ -131,14 +131,20 @@ namespace TestAmericanFootball2.Controllers
             }
             else
             {
+                bool shortDistance = game.RemainYards <= 24;
                 var probablity = new List<ValueTuple<int, OffenceModeEnum>>()
-                    {
-                        (1, OffenceModeEnum.Pant),
-                        (1, OffenceModeEnum.Gamble),
-                    };
-                if (game.RemainYards < 40)
                 {
+                    (1, OffenceModeEnum.Run),
+                };
+                if (shortDistance)
+                {
+                    probablity.Add((1, OffenceModeEnum.ShortPass));
                     probablity.Add((1, OffenceModeEnum.Kick));
+                }
+                else
+                {
+                    probablity.Add((1, OffenceModeEnum.LongPass));
+                    probablity.Add((1, OffenceModeEnum.Pant));
                 }
                 return _GetRandamValue<OffenceModeEnum>(probablity);
             }
@@ -324,7 +330,7 @@ namespace TestAmericanFootball2.Controllers
 
                 // ロングパス
                 case OffenceModeEnum.LongPass:
-                    gains = new List<decimal>() { 40, 20, 0, -1 };
+                    gains = new List<decimal>() { 40, 20, 0, -5 };
                     if (boastPass)
                     {
                         percents = new List<int>() { 2, 25, 90 };
@@ -339,7 +345,7 @@ namespace TestAmericanFootball2.Controllers
 
                 // パント
                 case OffenceModeEnum.Pant:
-                    return (Math.Floor(remainYards / 2), "実行", false);
+                    return (20, "実行", false);
 
                 // キック
                 case OffenceModeEnum.Kick:
