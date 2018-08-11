@@ -192,6 +192,54 @@ namespace TestAmericanFootball2.Controllers
 
             resultStr.Append($"{modeData.method}{result.result}。");
 
+            (bool flg, decimal remainYards) changeData = (false, 0);
+            resultStr.Append($"{result.gain:0} ヤードゲイン。");
+
+            // インターセプト
+            if (result.intercept)
+            {
+                resultStr.Append("インターセプト。");
+                changeData = (true, game.RemainYards);
+            }
+            // タッチダウン
+            else if (game.RemainYards <= 0)
+            {
+                resultStr.Append($"{(mode != OffenceModeEnum.Kick ? "タッチダウン。" : "")}");
+
+                int addScore = mode == OffenceModeEnum.Kick ? 3 : 7;
+                if (game.CurrentPlayer == 1)
+                {
+                    game.P1Score += addScore;
+                }
+                else
+                {
+                    game.P2Score += addScore;
+                }
+                changeData = (true, 10);
+            }
+
+            // パント
+            else if (mode == OffenceModeEnum.Pant)
+            {
+                changeData = (true, game.RemainYards);
+            }
+
+            // 攻撃成功
+            else if (game.GainYards >= 10)
+            {
+                game.GainYards = 0;
+                game.RemainOffenceNum = 4;
+                resultStr.Append($"ファーストダウン。");
+            }
+
+            // 攻撃失敗
+            else if (game.RemainOffenceNum <= 0)
+            {
+                changeData = (true, game.RemainYards);
+            }
+
+            resultStr.Append($"{modeData.seconds}秒経過。");
+
             // タイムアップ
             if (game.RemainSeconds <= 0)
             {
@@ -222,64 +270,14 @@ namespace TestAmericanFootball2.Controllers
                     }
                 }
             }
-            else
+
+            // チェンジフラグ
+            else if (changeData.flg)
             {
-                (bool flg, decimal remainYards) changeData = (false, 0);
-                resultStr.Append($"{result.gain:0} ヤードゲイン。");
-
-                // インターセプト
-                if (result.intercept)
-                {
-                    resultStr.Append("インターセプト。");
-                    changeData = (true, game.RemainYards);
-                }
-                // タッチダウン
-                else if (game.RemainYards <= 0)
-                {
-                    resultStr.Append($"{(mode != OffenceModeEnum.Kick ? "タッチダウン。" : "")}");
-
-                    int addScore = mode == OffenceModeEnum.Kick ? 3 : 7;
-                    if (game.CurrentPlayer == 1)
-                    {
-                        game.P1Score += addScore;
-                    }
-                    else
-                    {
-                        game.P2Score += addScore;
-                    }
-                    changeData = (true, 10);
-                }
-
-                // パント
-                else if (mode == OffenceModeEnum.Pant)
-                {
-                    changeData = (true, game.RemainYards);
-                }
-
-                // 攻撃成功
-                else if (game.GainYards >= 10)
-                {
-                    game.GainYards = 0;
-                    game.RemainOffenceNum = 4;
-                    resultStr.Append($"ファーストダウン。");
-                }
-
-                // 攻撃失敗
-                else if (game.RemainOffenceNum <= 0)
-                {
-                    changeData = (true, game.RemainYards);
-                }
-
-                resultStr.Append($"{modeData.seconds}秒経過。");
-
-                // チェンジフラグ
-                if (changeData.flg)
-                {
-                    game.CurrentPlayer = game.CurrentPlayer == 1 ? 2 : 1;
-                    string newPlayer = game.CurrentPlayer == 1 ? game.Player1Id : game.Player2Id;
-                    resultStr.Append($"チェンジ。＞{newPlayer}");
-                    _ResetOffenceData(game, changeData.remainYards);
-                }
+                game.CurrentPlayer = game.CurrentPlayer == 1 ? 2 : 1;
+                string newPlayer = game.CurrentPlayer == 1 ? game.Player1Id : game.Player2Id;
+                resultStr.Append($"チェンジ。＞{newPlayer}");
+                _ResetOffenceData(game, changeData.remainYards);
             }
 
             game.Result = resultStr.ToString();
