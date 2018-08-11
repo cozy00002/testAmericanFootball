@@ -32,20 +32,30 @@ namespace TestAmericanFootball2.Controllers
             return View(ameFootVM);
         }
 
-        // POST: AmeFoot
+        // POST: AmeFoot/Game
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Game(string player1Id,
-                                             string player2Id,
-                                             string method)
+            string player2Id,
+            string method
+            )
         {
             AmeFootViiewModel ameFootVM;
             Game game;
-            var offenceMode = method.GetOffenceMode();
+            OffenceModeEnum offenceMode;
+
+            if (string.IsNullOrEmpty(player2Id))
+            {
+                player2Id = Const.COM_NAME_DB;
+            }
+
+            bool isAIAuto = true;
+            if (method == "コンピューター") { isAIAuto = false; }
 
             game = await _context.Game.Where(x =>
             x.Player1Id == player1Id && x.Player2Id == player2Id)
             .SingleOrDefaultAsync();
+            offenceMode = method.GetOffenceMode();
             switch (offenceMode)
             {
                 case OffenceModeEnum.Run:
@@ -54,30 +64,107 @@ namespace TestAmericanFootball2.Controllers
                 case OffenceModeEnum.Pant:
                 case OffenceModeEnum.Kick:
                 case OffenceModeEnum.Gamble:
-                    _Offence(method.GetOffenceMode(), game);
+                case OffenceModeEnum.Cpu:
+                    if (offenceMode == OffenceModeEnum.Cpu)
+                    {
+                        int i = 0;
+                        int currentQ = game.CurrentQuarter;
+                        while (i < 1000 &&
+                            game.CurrentPlayer == 2 &&
+                            game.CurrentQuarter == currentQ &&
+                            game.RemainSeconds > 0)
+                        {
+                            i++;
+                            offenceMode = _AIThink(game);
+                            _Offence(offenceMode, game);
+                            if (!isAIAuto) break;
+                        }
+                    }
+                    else
+                    {
+                        _Offence(offenceMode, game);
+                    }
                     _context.Update(game);
                     await _context.SaveChangesAsync();
                     break;
 
                 case OffenceModeEnum.Empty:
-                    // 何もしない
-                    break;
-
                 case OffenceModeEnum.Initialize:
                 default:
-                    if (game != null)
+                    if (game != null && offenceMode == OffenceModeEnum.Initialize)
                     {
                         _context.Remove(game);
+                        game = null;
                     }
-                    game = _InitializeGame();
-                    game.Player1Id = player1Id;
-                    game.Player2Id = player2Id;
-                    _context.Update(game);
-                    await _context.SaveChangesAsync();
+                    if (game == null)
+                    {
+                        game = _InitializeGame();
+                        game.Player1Id = player1Id;
+                        game.Player2Id = player2Id;
+                        _context.Update(game);
+                        await _context.SaveChangesAsync();
+                    }
                     break;
             }
             ameFootVM = Mapper.Map<AmeFootViiewModel>(game);
+            //ameFootVM.IsAIAuto = isAIAuto;
             return View(ameFootVM);
+        }
+
+        /// <summary>
+        /// AI思考
+        /// </summary>
+        /// <param name="game"></param>
+        /// <returns></returns>
+        [NonAction]
+        private OffenceModeEnum _AIThink(Game game)
+        {
+            if (game.RemainOffenceNum > 0)
+            {
+                var probablity = new List<ValueTuple<int, OffenceModeEnum>>()
+                    {
+                        (1, OffenceModeEnum.Run),
+                        (1, OffenceModeEnum.ShortPass),
+                        (1, OffenceModeEnum.LongPass),
+                    };
+                return _GetRandamValue<OffenceModeEnum>(probablity);
+            }
+            else
+            {
+                var probablity = new List<ValueTuple<int, OffenceModeEnum>>()
+                    {
+                        (1, OffenceModeEnum.Pant),
+                        (1, OffenceModeEnum.Gamble),
+                    };
+                if (game.RemainYards < 40)
+                {
+                    probablity.Add((1, OffenceModeEnum.Kick));
+                }
+                return _GetRandamValue<OffenceModeEnum>(probablity);
+            }
+        }
+
+        /// <summary>
+        /// ランダム値取得
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="prms"></param>
+        /// <returns></returns>
+        [NonAction]
+        private T _GetRandamValue<T>(List<(int probablity, T value)> prms)
+        {
+            var sum = prms.Select(p => p.probablity).Sum();
+            int randam = new Random().Next(1, sum + 1);
+            int count = 0;
+            foreach (var prm in prms)
+            {
+                count += prm.probablity;
+                if (count >= randam)
+                {
+                    return (prm.value);
+                }
+            }
+            return prms[prms.Count() - 1].value;
         }
 
         /// <summary>
@@ -194,56 +281,6 @@ namespace TestAmericanFootball2.Controllers
                     _ResetOffenceData(game, changeData.remainYards);
                 }
             }
-
-            // チェンジ
-            //else if (game.RemainOffenceNum <= 0 ||
-            //         result.intercept ||
-            //         mode == OffenceModeEnum.Pant || mode == OffenceModeEnum.Kick ||
-            //         game.RemainYards <= 0
-            //         )
-            //{
-            //    resultStr.Append($"{result.gain:0} ヤードゲイン。");
-            //    if (result.intercept)
-            //    {
-            //        resultStr.Append("インターセプト。");
-            //        _ResetOffenceData(game, game.RemainYards);
-            //    }
-            //    else if (game.RemainYards <= 0)
-            //    {
-            //        resultStr.Append($"{(mode != OffenceModeEnum.Kick ? "タッチダウン。" : "")}");
-
-            //        int addScore = mode == OffenceModeEnum.Kick ? 3 : 7;
-            //        if (game.CurrentPlayer == 1)
-            //        {
-            //            game.P1Score += addScore;
-            //        }
-            //        else
-            //        {
-            //            game.P2Score += addScore;
-            //        }
-            //        _ResetOffenceData(game, 10);
-            //    }
-            //    else
-            //    {
-            //        _ResetOffenceData(game, game.RemainYards);
-            //    }
-
-            //    game.CurrentPlayer = game.CurrentPlayer == 1 ? 2 : 1;
-            //    string newPlayer = game.CurrentPlayer == 1 ? game.Player1Id : game.Player2Id;
-            //    resultStr.Append($"チェンジ。＞{newPlayer}");
-            //}
-            //// 攻撃成功
-            //else if (game.GainYards >= 10)
-            //{
-            //    resultStr.Append($"{result.gain:0} ヤードゲイン。");
-            //    game.GainYards = 0;
-            //    game.RemainOffenceNum = 4;
-            //    resultStr.Append($"攻撃成功。攻撃回数が4にリセットされます。");
-            //}
-            //else
-            //{
-            //    resultStr.Append($"{result.gain:0} ヤードゲイン。");
-            //}
 
             game.Result = resultStr.ToString();
         }

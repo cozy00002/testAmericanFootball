@@ -62,7 +62,6 @@ namespace TestAmericanFootball2
                 .ForMember(d => d.RemainYards, o => o.MapFrom(s => s.RemainYards.ToString("0")))
                 .ForMember(d => d.GainYards, o => o.MapFrom(s => s.GainYards.ToString("0")))
                 .ForMember(d => d.RemainTime, o => o.MapFrom(s => s.RemainSeconds.ConvertMinSec()));
-
                 cfg.CreateMap<AmeFootViiewModel, Game>();
             });
         }

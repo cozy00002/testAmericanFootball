@@ -18,6 +18,8 @@ namespace TestAmericanFootball2.Extentions
                 { "ギャンブル", OffenceModeEnum.Gamble },
                 { "初期化", OffenceModeEnum.Initialize },
                 { "", OffenceModeEnum.Empty },
+                { "コンピューター", OffenceModeEnum.Cpu },
+                { "コンピューター(スキップ)", OffenceModeEnum.Cpu },
             };
             if (!dic.ContainsKey(str)) { throw new System.ArgumentException($"不正なOffenceMode。:{value}"); }
             return dic[str];

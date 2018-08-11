@@ -16,6 +16,7 @@ namespace TestAmericanFootball2.Extentions
                 { OffenceModeEnum.Pant,("パント" ,0)},
                 { OffenceModeEnum.Kick,("キック",0) },
                 { OffenceModeEnum.Gamble,("ギャンブル",5) },
+                { OffenceModeEnum.Cpu,("コンピューター",0) },
             };
 
             return dic[value];

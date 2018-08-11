@@ -2,6 +2,14 @@
 {
     public enum OffenceModeEnum
     {
-        Empty, Initialize, Run, ShortPass, LongPass, Pant, Kick, Gamble
+        Empty,
+        Initialize,
+        Run,
+        ShortPass,
+        LongPass,
+        Pant,
+        Kick,
+        Gamble,
+        Cpu,
     }
 }
