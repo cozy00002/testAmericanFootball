@@ -8,6 +8,8 @@ using TestAmericanFootball2.Models;
 using AutoMapper;
 using TestAmericanFootball2.ViewModels;
 using TestAmericanFootball2.Extentions;
+using TestAmericanFootball2.Service.Interface;
+using TestAmericanFootball2.Service;
 
 namespace TestAmericanFootball2
 {
@@ -27,6 +29,8 @@ namespace TestAmericanFootball2
 
             services.AddDbContext<TestAmericanFootball2Context>(options =>
                     options.UseSqlServer(Configuration.GetConnectionString("TestAmericanFootball2Context")));
+
+            services.AddScoped<IGameService, GameService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
