@@ -9,8 +9,8 @@ namespace TestAmericanFootball2.Models
     {
         public static void Initialize(IServiceProvider serviceProvider)
         {
-            using (var context = new TestAmericanFootball2Context(
-                serviceProvider.GetRequiredService<DbContextOptions<TestAmericanFootball2Context>>()))
+            using (var context = new AFDbContext(
+                serviceProvider.GetRequiredService<DbContextOptions<AFDbContext>>()))
             {
                 // Look for any movies.
                 if (context.Movie.Any())

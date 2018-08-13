@@ -10,7 +10,7 @@ using TestAmericanFootball2.Models;
 
 namespace TestAmericanFootball2.Migrations
 {
-    [DbContext(typeof(TestAmericanFootball2Context))]
+    [DbContext(typeof(AFDbContext))]
     [Migration("20180808055811_Mod_Add_Column_GainYards")]
     partial class Mod_Add_Column_GainYards
     {

@@ -8,7 +8,7 @@
 }
 
 <h2>AmeFoot</h2>
-<form asp-controller="AmeFoot" asp-action="Game">
+<form asp-controller="AmeFoot" asp-action="Game" id="form">
     <p>
         <input type="submit" name="method" value="初期化" class="btn btn-default" />
         <a asp-action="Index">別のユーザーで始める</a>
@@ -124,10 +124,11 @@
     </p>
     <p>
         @*<input type="button" id="test1" value="test2" class="btn btn-info" onclick="test_onclick()" />*@
-        ZIP:<input type="text" id="zip" />
-        アドレス:<input type="text" id="address" />
+        ZIP:<input type="text" id="zip" name="zip" />
+        アドレス:<input type="text" id="address" name="address" />
         <input type="button" id="test1" value="test1" class="btn btn-info" />
         <input type="button" id="test2" value="test2" class="btn btn-info" />
+        <input type="button" id="test3" value="test3" class="btn btn-info" />
     </p>
 
     <div>
@@ -139,71 +140,103 @@
 </form>e
 
 @section Scripts{
-<script src="/js/game.js"></script>
-<script>
-    $('#test1').on('click', function () {
-        $.getJSON('http://zipcloud.ibsnet.co.jp/api/search?callback=?',
-            {
-                zipcode: $('#zip').val()
-            })
-            .done(function (data) {
-                console.debug(data)
-
-                if (data.results) {
-                    var result = data.results[0];
-                    $('#address').val(result.address1 + result.address2 + result.address3);
-                } else {
-                    $('#address').val('該当する住所が存在しません。');
-                }
-            });
-    });
-
-    $('#test2').on('click', function () {
-        $.getJSON('api',
-            {
-                //zipcode: $('#zip').val()
-            })
-            .then(data => {
-                console.debug(data)
-
-                if (data) {
-                    $('#address').val(data[0] + data[1]);
-                } else {
-                    $('#address').val('該当する住所が存在しません。');
-                }
-            });
-    });
-
-/*            // 1.phpファイルへのアクセス
-            $.get('get.php',
+    <script src="/js/game.js"></script>
+    <script>
+        $('#test1').on('click', function () {
+            $.getJSON('http://zipcloud.ibsnet.co.jp/api/search?callback=?',
                 {
-                    query: $('#keyword').val()
-                }
-            )
-                // 2検索成功時にはページに結果を反映
-                .done(function (data) {
-                    // 結果リストをクリア
-                    $('#result').empty();
-                    // <Question>要素（個々の質問情報）を順番に処理
-                    $('Question', data).each(function () {
-                        // <Url>（詳細ページ）、<Content>（質問本文）をもとにリンクリストを生成
-                        $('#result').append(
-                            $('<li></li>').append(
-                                $('<a></a>')
-                                    .attr({
-                                        href: $('Url', this).text(),
-                                        target: '_blank'
-                                    })
-                                    .text($('Content', this).text().substring(0, 255) + '...')
-                            )
-                        );
-                    });
+                    zipcode: $('#zip').val()
                 })
-                // 3検索失敗時には、その旨をダイアログ表示
-                .fail(function () {
-                    window.alert('正しい結果を得られませんでした。');
+                .done(function (data) {
+                    console.debug(data)
+
+                    if (data.results) {
+                        var result = data.results[0];
+                        $('#address').val(result.address1 + result.address2 + result.address3);
+                    } else {
+                        $('#address').val('該当する住所が存在しません。');
+                    }
                 });
         });
-    */
-</script>
+
+        $('#test2').on('click', function () {
+            var j = { zip: 'aaaaa' };
+            var jsonString = JSON.stringify(j);
+            $.ajax({
+                url: 'api',
+                type: 'POST',
+                dataType: 'json',
+                data: jsonString,
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+
+            })
+                .done(function (data) {
+                    console.debug(data)
+
+                    if (data.results) {
+                        var result = data.results[0];
+                        $('#address').val(result.address1 + result.address2 + result.address3);
+                    } else {
+                        $('#address').val('該当する住所が存在しません。');
+                    }
+                });
+        });
+
+        $('#test3').on('click', function () {
+            var json = {
+                player1Id: $('#zip').val()
+            };
+            fetch('api',
+                {
+                    method: 'POST',
+                    body: JSON.stringify(json),
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    return response.json();
+                })
+                .then(json => {
+                    $('#address').val(json.result);
+                })
+                ;
+        });
+
+/*            // 1.phpファイルへのアクセス
+                                        $.get('get.php',
+                                            {
+                                                query: $('#keyword').val()
+                                            }
+                                        )
+                                            // 2検索成功時にはページに結果を反映
+                                            .done(function (data) {
+                                                // 結果リストをクリア
+                                                $('#result').empty();
+                                                // <Question>要素（個々の質問情報）を順番に処理
+                                                $('Question', data).each(function () {
+                                                    // <Url>（詳細ページ）、<Content>（質問本文）をもとにリンクリストを生成
+                                                    $('#result').append(
+                                                        $('<li></li>').append(
+                                                            $('<a></a>')
+                                                                .attr({
+                                                                    href: $('Url', this).text(),
+                                                                    target: '_blank'
+                                                                })
+                                                                .text($('Content', this).text().substring(0, 255) + '...')
+                                                        )
+                                                    );
+                                                });
+                                            })
+                                            // 3検索失敗時には、その旨をダイアログ表示
+                                            .fail(function () {
+                                                window.alert('正しい結果を得られませんでした。');
+                                            });
+                                    });
+                                */
+    </script>
 }

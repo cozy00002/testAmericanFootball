@@ -27,8 +27,8 @@ namespace TestAmericanFootball2
         {
             services.AddMvc();
 
-            services.AddDbContext<TestAmericanFootball2Context>(options =>
-                    options.UseSqlServer(Configuration.GetConnectionString("TestAmericanFootball2Context")));
+            services.AddDbContext<AFDbContext>(options =>
+                    options.UseSqlServer(Configuration.GetConnectionString("AFDbContext")));
 
             services.AddScoped<IGameService, GameService>();
         }

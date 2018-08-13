@@ -10,7 +10,7 @@ using TestAmericanFootball2.Models;
 
 namespace TestAmericanFootball2.Migrations
 {
-    [DbContext(typeof(TestAmericanFootball2Context))]
+    [DbContext(typeof(AFDbContext))]
     partial class TestAmericanFootball2ContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

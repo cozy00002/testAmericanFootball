@@ -2,9 +2,9 @@
 
 namespace TestAmericanFootball2.Models
 {
-    public class TestAmericanFootball2Context : DbContext
+    public class AFDbContext : DbContext
     {
-        public TestAmericanFootball2Context(DbContextOptions<TestAmericanFootball2Context> options)
+        public AFDbContext(DbContextOptions<AFDbContext> options)
             : base(options)
         {
         }

@@ -76,7 +76,7 @@ namespace TestAmericanFootball2.ViewModels
         {
             get
             {
-                return (10 - int.Parse(GainYards)).ToString();
+                return GainYards != null ? (10 - int.Parse(GainYards)).ToString() : "";
             }
         }
 

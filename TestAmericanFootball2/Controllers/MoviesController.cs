@@ -11,9 +11,9 @@ namespace TestAmericanFootball2.Controllers
 {
     public class MoviesController : Controller
     {
-        private readonly TestAmericanFootball2Context _context;
+        private readonly AFDbContext _context;
 
-        public MoviesController(TestAmericanFootball2Context context)
+        public MoviesController(AFDbContext context)
         {
             _context = context;
         }

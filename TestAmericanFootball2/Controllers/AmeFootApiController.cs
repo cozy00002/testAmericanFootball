@@ -5,8 +5,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using TestAmericanFootball2.Enums;
+using TestAmericanFootball2.Models;
 using TestAmericanFootball2.Service;
 using TestAmericanFootball2.Service.Interface;
+using TestAmericanFootball2.ViewModels;
 
 namespace TestAmericanFootball2.Controllers
 {
@@ -22,11 +25,14 @@ namespace TestAmericanFootball2.Controllers
         }
 
         // GET: api/AmeFootApi
-        [HttpGet]
-        public IEnumerable<string> Get()
+        [HttpPost]
+        public async Task<ActionResult> Post([FromBody]GameParam param)
         {
-            _service.WriteMessage("test");
-            return new string[] { "value1", "value2" };
+            string player1Id = "k";
+            string player2Id = "CPU";
+
+            var ret = await _service.GameAsync(player1Id, player2Id, "");
+            return Ok(ret);
         }
 
         // GET: api/AmeFootApi/5
@@ -36,11 +42,11 @@ namespace TestAmericanFootball2.Controllers
             return "value";
         }
 
-        // POST: api/AmeFootApi
-        [HttpPost]
-        public void Post([FromBody]string value)
-        {
-        }
+        //// POST: api/AmeFootApi
+        //[HttpPost]
+        //public void Post([FromBody]string value)
+        //{
+        //}
 
         // PUT: api/AmeFootApi/5
         [HttpPut("{id}")]
@@ -53,5 +59,10 @@ namespace TestAmericanFootball2.Controllers
         public void Delete(int id)
         {
         }
+    }
+
+    public class Test
+    {
+        public string zip { get; set; }
     }
 }

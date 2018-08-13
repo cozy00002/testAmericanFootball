@@ -20,7 +20,7 @@ namespace TestAmericanFootball2
 
                 try
                 {
-                    var context = services.GetRequiredService<TestAmericanFootball2Context>();
+                    var context = services.GetRequiredService<AFDbContext>();
                     context.Database.Migrate();
                     SeedData.Initialize(services);
                 }
