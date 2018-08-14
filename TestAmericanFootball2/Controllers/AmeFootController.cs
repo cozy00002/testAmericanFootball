@@ -40,11 +40,13 @@ namespace TestAmericanFootball2.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Game(string player1Id,
             string player2Id,
-            string method
+            string method,
+            bool isAiAuto
             )
         {
             var game = await _service.GameAsync(player1Id, player2Id, method);
             var ameFootVM = Mapper.Map<AmeFootViiewModel>(game);
+            ameFootVM.IsAIAuto = isAiAuto;
             return View(ameFootVM);
         }
 

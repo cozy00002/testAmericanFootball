@@ -108,10 +108,10 @@ namespace TestAmericanFootball2.ViewModels
         /// </summary>
         public string Result { get; set; }
 
-        ///// <summary>
-        ///// AIオート実行
-        ///// </summary>
-        //[Display(Name = "CPU自動実行")]
-        //public bool IsAIAuto { get; set; }
+        /// <summary>
+        /// AIオート実行
+        /// </summary>
+        [Display(Name = "CPU自動実行")]
+        public bool IsAIAuto { get; set; }
     }
 }

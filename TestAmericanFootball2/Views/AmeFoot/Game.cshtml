@@ -4,7 +4,7 @@
     ViewData["Title"] = "Index";
 
     bool shortDistance = int.Parse(Model.RemainYards) <= 24;
-
+    bool isCpu = Model.Player2Id == Const.COM_NAME_DISPLAY && Model.CurrentPlayer == 2;
 }
 
 <h2>AmeFoot</h2>
@@ -84,16 +84,19 @@
     <p>
         @if (Model.RemainSeconds > 0)
         {
-            @if (Model.Player2Id == Const.COM_NAME_DISPLAY && Model.CurrentPlayer == 2)
+            @if (isCpu)
             {
-                <input type="submit" name="method" value="コンピューター" class="btn btn-danger" />
+                <input type="submit" name="method" id="method_com" value="コンピューター" class="btn btn-danger" />
                 <span class="tool-tip"
                       data-toggle="tooltip"
                       data-placement="top"
                       data-html="true"
-                      title="コンピューターの番が終わるまで<br>スキップします。">
+                      title="コンピューターの番が終わるまで<br>スキップします。"
+                      style="display:none">
                     <input type="submit" name="method" value="コンピューター(スキップ)" class="btn btn-danger" />
                 </span>
+                @Html.CheckBoxFor(model => model.IsAIAuto)
+                @Html.LabelFor(model => model.IsAIAuto)
             }
             else
             {
@@ -122,14 +125,16 @@
             }
         }
     </p>
-    <p>
-        @*<input type="button" id="test1" value="test2" class="btn btn-info" onclick="test_onclick()" />*@
-        ZIP:<input type="text" id="zip" name="zip" />
-        アドレス:<input type="text" id="address" name="address" />
-        <input type="button" id="test1" value="test1" class="btn btn-info" />
-        <input type="button" id="test2" value="test2" class="btn btn-info" />
-        <input type="button" id="test3" value="test3" class="btn btn-info" />
-    </p>
+    @if (false) {
+        <p>
+            @*<input type="button" id="test1" value="test2" class="btn btn-info" onclick="test_onclick()" />*@
+            ZIP:<input type="text" id="zip" name="zip" />
+            アドレス:<input type="text" id="address" name="address" />
+            <input type="button" id="test1" value="test1" class="btn btn-info" />
+            <input type="button" id="test2" value="test2" class="btn btn-info" />
+            <input type="button" id="test3" value="test3" class="btn btn-info" />
+        </p>
+    }
 
     <div>
         @Html.DisplayFor(model => model.Result)
@@ -137,7 +142,7 @@
 
     @Html.HiddenFor(model => model.Player1Id)
     @Html.HiddenFor(model => model.Player2Id)
-</form>e
+</form>
 
 @section Scripts{
     <script src="/js/game.js"></script>
@@ -207,36 +212,27 @@
                 ;
         });
 
-/*            // 1.phpファイルへのアクセス
-                                        $.get('get.php',
-                                            {
-                                                query: $('#keyword').val()
-                                            }
-                                        )
-                                            // 2検索成功時にはページに結果を反映
-                                            .done(function (data) {
-                                                // 結果リストをクリア
-                                                $('#result').empty();
-                                                // <Question>要素（個々の質問情報）を順番に処理
-                                                $('Question', data).each(function () {
-                                                    // <Url>（詳細ページ）、<Content>（質問本文）をもとにリンクリストを生成
-                                                    $('#result').append(
-                                                        $('<li></li>').append(
-                                                            $('<a></a>')
-                                                                .attr({
-                                                                    href: $('Url', this).text(),
-                                                                    target: '_blank'
-                                                                })
-                                                                .text($('Content', this).text().substring(0, 255) + '...')
-                                                        )
-                                                    );
-                                                });
-                                            })
-                                            // 3検索失敗時には、その旨をダイアログ表示
-                                            .fail(function () {
-                                                window.alert('正しい結果を得られませんでした。');
-                                            });
-                                    });
-                                */
     </script>
+
+    @if (isCpu) { 
+        <script>
+            setTimeout(function () {
+                var isAiAuto = $('#IsAIAuto').prop("checked")
+                if (isAiAuto) {
+                    $('#method_com').click();
+                }
+            }, 1000);
+
+            $('#IsAIAuto').on('click', function () {
+                setTimeout(function () {
+                    var isAiAuto = $('#IsAIAuto').prop("checked")
+                    if (isAiAuto) {
+                        $('#method_com').click();
+                    }
+                }, 2000);
+            });
+        </script>
+    }
+
+
 }
