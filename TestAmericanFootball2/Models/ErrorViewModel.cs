@@ -1,5 +1,3 @@
-using System;
-
 namespace TestAmericanFootball2.Models
 {
     public class ErrorViewModel

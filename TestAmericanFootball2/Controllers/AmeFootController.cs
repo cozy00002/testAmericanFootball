@@ -1,13 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using TestAmericanFootball2.Enums;
-using TestAmericanFootball2.Extentions;
 using TestAmericanFootball2.Models;
 using TestAmericanFootball2.Service.Interface;
 using TestAmericanFootball2.ViewModels;

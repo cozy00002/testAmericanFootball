@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -10,7 +9,6 @@ using TestAmericanFootball2.Enums;
 using TestAmericanFootball2.Extentions;
 using TestAmericanFootball2.Models;
 using TestAmericanFootball2.Service.Interface;
-using TestAmericanFootball2.ViewModels;
 
 namespace TestAmericanFootball2.Service
 {
@@ -314,24 +312,35 @@ namespace TestAmericanFootball2.Service
         /// <returns></returns>
         private (decimal gain, string result, bool intercept) _IsOffenceSuccess(OffenceModeEnum mode, decimal remainYards)
         {
-            int result = new Random().Next(0, 100);
-            int resultIc;
+            int result = 0;
+            int rnResult = new Random().Next(0, 100);
+            int spResult = new Random().Next(0, 100);
+            int lpRresult = new Random().Next(0, 100);
+            int kkRresult = new Random().Next(0, 100);
+            int icResult = new Random().Next(0, 100);
+
             bool boastPass = remainYards >= (Const.ALL_YARDS / 2);
             List<int> percents;
             List<decimal> gains;
             bool interCept = false;
             bool interCeptUse = false;
 
+            //var dic = new Dictionary<OffenceModeEnum, (List<int> percents, List<int> gain)> {
+            //    { OffenceModeEnum.Run, (new List<int>(){ 10, 40, 45, 5 } ,new List<int>{ 10, 5, 1, -1} )},
+            //};
+
             switch (mode)
             {
                 // ラン
                 case OffenceModeEnum.Run:
-                    percents = new List<int>() { 10, 50, 95 };
+                    result = rnResult;
+                    percents = new List<int>() { 10, 40, 95 };
                     gains = new List<decimal>() { 10, 5, 1, -1 };
                     break;
 
                 // ショートパス
                 case OffenceModeEnum.ShortPass:
+                    result = spResult;
                     gains = new List<decimal>() { 20, 10, 0, -1 };
                     if (boastPass)
                     {
@@ -347,6 +356,7 @@ namespace TestAmericanFootball2.Service
 
                 // ロングパス
                 case OffenceModeEnum.LongPass:
+                    result = lpRresult;
                     gains = new List<decimal>() { 40, 20, 0, -5 };
                     if (boastPass)
                     {
@@ -366,6 +376,7 @@ namespace TestAmericanFootball2.Service
 
                 // キック
                 case OffenceModeEnum.Kick:
+                    result = kkRresult;
                     var kickProbability = remainYards >= 25 ? 20 : 90;
                     percents = new List<int>() { 0, kickProbability, 100 };
                     gains = new List<decimal>() { 0, remainYards, -10, 0 };
@@ -388,8 +399,7 @@ namespace TestAmericanFootball2.Service
                 // インターセプト判定
                 if (interCeptUse)
                 {
-                    resultIc = new Random().Next(0, 10);
-                    interCept = resultIc <= 0;
+                    interCept = icResult < 5;
                 }
 
                 return (gains[2], "失敗", interCept);
@@ -398,14 +408,11 @@ namespace TestAmericanFootball2.Service
             {
                 if (interCeptUse)
                 {
-                    resultIc = new Random().Next(0, 5);
-                    interCept = resultIc <= 0;
+                    interCept = icResult < 15;
                 }
 
                 return (gains[3], "大失敗", interCept);
             }
-
-            //return result < percent;
         }
 
         /// <summary>
