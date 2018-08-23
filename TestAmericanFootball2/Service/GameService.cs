@@ -198,6 +198,7 @@ namespace TestAmericanFootball2.Service
         /// <param name="remainYards"></param>
         /// <returns></returns>
         private decimal _getGain(OffenceModeEnum mode, int resultCode, decimal remainYards)
+
         {
             var dicGain = new Dictionary<int, decimal>();
 
@@ -371,7 +372,7 @@ namespace TestAmericanFootball2.Service
 
             int resultCode;
             bool boastPass = remainYards >= (Const.ALL_YARDS / 2);
-            bool interCeptUse = false;
+            bool interceptUse = false;
 
             var dicResult = new Dictionary<int, string>() {
                 { 0, "大成功"},
@@ -454,7 +455,7 @@ namespace TestAmericanFootball2.Service
                     {
                         resultCode = spResult;
                     }
-                    interCeptUse = true;
+                    interceptUse = true;
                     break;
 
                 // ロングパス
@@ -467,7 +468,7 @@ namespace TestAmericanFootball2.Service
                     {
                         resultCode = lpResult;
                     }
-                    interCeptUse = true;
+                    interceptUse = true;
                     break;
 
                 // パント
@@ -491,7 +492,19 @@ namespace TestAmericanFootball2.Service
 
             #endregion get gains by resultCode.
 
-            return (gain, dicResult[resultCode], interCeptUse);
+            bool intercept = false;
+            if (interceptUse)
+            {
+                // 失敗 5% 大失敗 20%
+                var icProbability = resultCode == 2 ? 5 : 20;
+                intercept = _GetRandamValue(
+                    new List<(int probablity, bool result)>(){
+                    (icProbability,true),
+                    (100 - icProbability,false),
+                });
+            }
+
+            return (gain, dicResult[resultCode], intercept);
         }
 
         /// <summary>

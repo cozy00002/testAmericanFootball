@@ -83,51 +83,51 @@
 
     <p>
         @if (Model.RemainSeconds > 0)
-        {
-            @if (isCpu)
-            {
-                @*<input type="submit" name="method" id="method_com" value="コンピューター" class="btn btn-danger" />
-                <span class="tool-tip"
-                      data-toggle="tooltip"
-                      data-placement="top"
-                      data-html="true"
-                      title="コンピューターの番が終わるまで<br>スキップします。"
-                      style="display:none">
-                    <input type="submit" name="method" value="コンピューター(スキップ)" class="btn btn-danger" />
-                </span>
-                @Html.CheckBoxFor(model => model.IsAIAuto)
-                @Html.LabelFor(model => model.IsAIAuto)*@
-                <input type="submit" name="method" value="ショートディフェンス" class="btn btn-danger" />
-                <input type="submit" name="method" value="ミドルディフェンス" class="btn btn-danger" />
-                <input type="submit" name="method" value="ロングディフェンス" class="btn btn-danger" />
+    {
+        @if (isCpu)
+    {
+        <input type="submit" name="method" id="method_com" value="コンピューター" class="btn btn-danger" />
+        @*<span class="tool-tip"
+              data-toggle="tooltip"
+              data-placement="top"
+              data-html="true"
+              title="コンピューターの番が終わるまで<br>スキップします。"
+              style="display:none">
+            <input type="submit" name="method" value="コンピューター(スキップ)" class="btn btn-danger" />
+        </span>
+        @Html.CheckBoxFor(model => model.IsAIAuto)
+        @Html.LabelFor(model => model.IsAIAuto)*@
+        <input type="submit" name="method" value="ショートディフェンス" class="btn btn-danger" />
+        <input type="submit" name="method" value="ミドルディフェンス" class="btn btn-danger" />
+        <input type="submit" name="method" value="ロングディフェンス" class="btn btn-danger" />
 
-            }
-            else
-            {
+}
+else
+{
 
-                @if (Model.RemainOffenceNum >= 2)
-                {
-                    <input type="submit" name="method" value="ラン" class="btn btn-default" />
-                    <input type="submit" name="method" value="ショートパス" class="btn btn-default" />
-                    <input type="submit" name="method" value="ロングパス" class="btn btn-default" />
-                }
-                else
-                {
-                    @if (shortDistance)
-                    {
-                        <input type="submit" name="method" value="ラン" class="btn btn-default" />
-                        <input type="submit" name="method" value="ショートパス" class="btn btn-default" />
-                        <input type="submit" name="method" value="キック" class="btn btn-info" />
-                    }
-                    else
-                    {
-                        <input type="submit" name="method" value="ラン" class="btn btn-default" />
-                        <input type="submit" name="method" value="ロングパス" class="btn btn-default" />
-                        <input type="submit" name="method" value="パント" class="btn btn-info" />
-                    }
-                }
-            }
-        }
+    @if (Model.RemainOffenceNum >= 2)
+{
+    <input type="submit" name="method" value="ラン" class="btn btn-default" />
+    <input type="submit" name="method" value="ショートパス" class="btn btn-default" />
+    <input type="submit" name="method" value="ロングパス" class="btn btn-default" />
+}
+else
+{
+    @if (shortDistance)
+{
+    <input type="submit" name="method" value="ラン" class="btn btn-default" />
+    <input type="submit" name="method" value="ショートパス" class="btn btn-default" />
+    <input type="submit" name="method" value="キック" class="btn btn-info" />
+}
+else
+{
+    <input type="submit" name="method" value="ラン" class="btn btn-default" />
+    <input type="submit" name="method" value="ロングパス" class="btn btn-default" />
+    <input type="submit" name="method" value="パント" class="btn btn-info" />
+}
+}
+}
+}
     </p>
     @if (false) {
         <p>
