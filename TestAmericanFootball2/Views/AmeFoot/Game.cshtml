@@ -86,7 +86,7 @@
         {
             @if (isCpu)
             {
-                <input type="submit" name="method" id="method_com" value="コンピューター" class="btn btn-danger" />
+                @*<input type="submit" name="method" id="method_com" value="コンピューター" class="btn btn-danger" />
                 <span class="tool-tip"
                       data-toggle="tooltip"
                       data-placement="top"
@@ -96,7 +96,11 @@
                     <input type="submit" name="method" value="コンピューター(スキップ)" class="btn btn-danger" />
                 </span>
                 @Html.CheckBoxFor(model => model.IsAIAuto)
-                @Html.LabelFor(model => model.IsAIAuto)
+                @Html.LabelFor(model => model.IsAIAuto)*@
+                <input type="submit" name="method" value="ショートディフェンス" class="btn btn-danger" />
+                <input type="submit" name="method" value="ミドルディフェンス" class="btn btn-danger" />
+                <input type="submit" name="method" value="ロングディフェンス" class="btn btn-danger" />
+
             }
             else
             {

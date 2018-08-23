@@ -10,5 +10,8 @@
         Pant,
         Kick,
         Cpu,
+        ShortDiffence,
+        MiddleDiffence,
+        LongDiffence,
     }
 }

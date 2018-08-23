@@ -191,6 +191,61 @@ namespace TestAmericanFootball2.Service
         }
 
         /// <summary>
+        /// Get Gain Yards.
+        /// </summary>
+        /// <param name="mode"></param>
+        /// <param name="resultCode"></param>
+        /// <param name="remainYards"></param>
+        /// <returns></returns>
+        private decimal _getGain(OffenceModeEnum mode, int resultCode, decimal remainYards)
+        {
+            var dicGain = new Dictionary<int, decimal>();
+
+            switch (mode)
+            {
+                // ラン
+                case OffenceModeEnum.Run:
+                    dicGain[0] = 10;
+                    dicGain[1] = 5;
+                    dicGain[2] = 2;
+                    dicGain[3] = -1;
+
+                    break;
+
+                // ショートパス
+                case OffenceModeEnum.ShortPass:
+                    dicGain[0] = 20;
+                    dicGain[1] = 10;
+                    dicGain[2] = 0;
+                    dicGain[3] = -1;
+                    break;
+
+                // ロングパス
+                case OffenceModeEnum.LongPass:
+                    dicGain[0] = 50;
+                    dicGain[1] = 20;
+                    dicGain[2] = 0;
+                    dicGain[3] = -1;
+                    break;
+
+                // キック
+                case OffenceModeEnum.Kick:
+                    dicGain[0] = 0;
+                    dicGain[1] = 50;
+                    dicGain[2] = -10;
+                    dicGain[3] = 0;
+                    break;
+
+                case OffenceModeEnum.Pant:
+                default:
+                    throw new ArgumentException($"OffenceModeが不正 mode:{mode}");
+            }
+
+            decimal retValue = dicGain[resultCode];
+            return retValue > remainYards ? remainYards : retValue;
+        }
+
+        /// <summary>
         /// 攻撃ルーチン
         /// </summary>
         /// <param name="mode"></param>
@@ -312,62 +367,107 @@ namespace TestAmericanFootball2.Service
         /// <returns></returns>
         private (decimal gain, string result, bool intercept) _IsOffenceSuccess(OffenceModeEnum mode, decimal remainYards)
         {
-            int result = 0;
-            int rnResult = new Random().Next(0, 100);
-            int spResult = new Random().Next(0, 100);
-            int lpRresult = new Random().Next(0, 100);
-            int kkRresult = new Random().Next(0, 100);
-            int icResult = new Random().Next(0, 100);
+            #region init valuables.
 
+            int resultCode;
             bool boastPass = remainYards >= (Const.ALL_YARDS / 2);
-            List<int> percents;
-            List<decimal> gains;
-            bool interCept = false;
             bool interCeptUse = false;
 
-            //var dic = new Dictionary<OffenceModeEnum, (List<int> percents, List<int> gain)> {
-            //    { OffenceModeEnum.Run, (new List<int>(){ 10, 40, 45, 5 } ,new List<int>{ 10, 5, 1, -1} )},
-            //};
+            var dicResult = new Dictionary<int, string>() {
+                { 0, "大成功"},
+                { 1, "成功"},
+                { 2, "失敗"},
+                { 3, "大失敗"},
+            };
+            var dicGain = new Dictionary<int, decimal>();
+
+            #endregion init valuables.
+
+            #region init randamValues.
+
+            var runResult = _GetRandamValue(
+                new List<(int probablity, int result)>(){
+                    (10,0),
+                    (30,1),
+                    (55,2),
+                    (55,3),
+                });
+
+            var spResult = _GetRandamValue(
+                new List<(int probablity, int result)>(){
+                    (5, 0),
+                    (20,1),
+                    (70,2),
+                    (5, 3),
+                });
+
+            var spbResult = _GetRandamValue(
+                new List<(int probablity, int result)>(){
+                    (5, 0),
+                    (35,1),
+                    (58,2),
+                    (2, 3),
+                });
+
+            var lpResult = _GetRandamValue(
+                new List<(int probablity, int result)>(){
+                    (2, 0),
+                    (13,1),
+                    (70,2),
+                    (15,3),
+                });
+
+            var lpbResult = _GetRandamValue(
+                new List<(int probablity, int result)>(){
+                    (2, 0),
+                    (23,1),
+                    (65,2),
+                    (10,3),
+                });
+
+            var kickProbability = remainYards >= 25 ? 20 : 90;
+            var kkRresult = _GetRandamValue(
+                new List<(int probablity, int result)>(){
+                    (kickProbability,1),
+                    (100 - kickProbability,2),
+                });
+
+            #endregion init randamValues.
+
+            #region get resultCode and interceptUse by mode.
 
             switch (mode)
             {
                 // ラン
                 case OffenceModeEnum.Run:
-                    result = rnResult;
-                    percents = new List<int>() { 10, 40, 95 };
-                    gains = new List<decimal>() { 10, 5, 1, -1 };
+                    resultCode = runResult;
+
                     break;
 
                 // ショートパス
                 case OffenceModeEnum.ShortPass:
-                    result = spResult;
-                    gains = new List<decimal>() { 20, 10, 0, -1 };
                     if (boastPass)
                     {
-                        percents = new List<int>() { 5, 40, 98 };
+                        resultCode = spbResult;
                     }
                     else
                     {
-                        percents = new List<int>() { 5, 25, 95 };
+                        resultCode = spResult;
                     }
                     interCeptUse = true;
-
                     break;
 
                 // ロングパス
                 case OffenceModeEnum.LongPass:
-                    result = lpRresult;
-                    gains = new List<decimal>() { 40, 20, 0, -5 };
                     if (boastPass)
                     {
-                        percents = new List<int>() { 2, 25, 90 };
+                        resultCode = lpbResult;
                     }
                     else
                     {
-                        percents = new List<int>() { 2, 15, 85 };
+                        resultCode = lpResult;
                     }
                     interCeptUse = true;
-
                     break;
 
                 // パント
@@ -376,43 +476,22 @@ namespace TestAmericanFootball2.Service
 
                 // キック
                 case OffenceModeEnum.Kick:
-                    result = kkRresult;
-                    var kickProbability = remainYards >= 25 ? 20 : 90;
-                    percents = new List<int>() { 0, kickProbability, 100 };
-                    gains = new List<decimal>() { 0, remainYards, -10, 0 };
+                    resultCode = kkRresult;
                     break;
 
                 default:
                     throw new ArgumentException("OffenceModeが不正");
             }
 
-            if (percents[0] > result)
-            {
-                return (gains[0], "大成功", false);
-            }
-            else if (percents[1] > result)
-            {
-                return (gains[1], "成功", false);
-            }
-            else if (percents[2] > result)
-            {
-                // インターセプト判定
-                if (interCeptUse)
-                {
-                    interCept = icResult < 5;
-                }
+            #endregion get resultCode and interceptUse by mode.
 
-                return (gains[2], "失敗", interCept);
-            }
-            else
-            {
-                if (interCeptUse)
-                {
-                    interCept = icResult < 15;
-                }
+            #region get gains by resultCode.
 
-                return (gains[3], "大失敗", interCept);
-            }
+            var gain = _getGain(mode, resultCode, remainYards);
+
+            #endregion get gains by resultCode.
+
+            return (gain, dicResult[resultCode], interCeptUse);
         }
 
         /// <summary>
